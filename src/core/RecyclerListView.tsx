@@ -78,7 +78,7 @@ export interface OnRecreateParams {
 export interface RecyclerListViewProps {
     layoutProvider: BaseLayoutProvider;
     dataProvider: BaseDataProvider;
-    rowRenderer: (type: string | number, data: any, index: number, extendedState?: object) => JSX.Element | JSX.Element[] | null;
+    rowRenderer: (type: string | number, data: any, index: number, extendedState?: any) => JSX.Element | JSX.Element[] | null;
     contextProvider?: ContextProvider;
     renderAheadOffset?: number;
     isHorizontal?: boolean;
@@ -89,7 +89,7 @@ export interface RecyclerListViewProps {
     onVisibleIndexesChanged?: TOnItemStatusChanged;
     onVisibleIndicesChanged?: TOnItemStatusChanged;
     renderFooter?: () => JSX.Element | JSX.Element[] | null;
-    externalScrollView?: { new(props: ScrollViewDefaultProps): BaseScrollView };
+    externalScrollView?: new (props: ScrollViewDefaultProps) => BaseScrollView;
     initialOffset?: number;
     initialRenderIndex?: number;
     scrollThrottle?: number;
@@ -565,13 +565,14 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
         }
     }
 
-    private _generateRenderStack(): Array<JSX.Element | null> {
-        const renderedItems = [];
+    private _generateRenderStack(): Array<React.ReactNode | null> {
+        const renderedItems: React.ReactNode[] = [];
         for (const key in this.state.renderStack) {
             if (this.state.renderStack.hasOwnProperty(key)) {
                 renderedItems.push(this._renderRowUsingMeta(this.state.renderStack[key]));
             }
         }
+        renderedItems.push(this.props.children || null);
         return renderedItems;
     }
 
@@ -608,13 +609,13 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
 RecyclerListView.propTypes = {
 
     //Refer the sample
-    layoutProvider: PropTypes.instanceOf(BaseLayoutProvider).isRequired,
+    layoutProvider: PropTypes.instanceOf(BaseLayoutProvider as any).isRequired,
 
     //Refer the sample
-    dataProvider: PropTypes.instanceOf(BaseDataProvider).isRequired,
+    dataProvider: PropTypes.instanceOf(BaseDataProvider as any).isRequired,
 
     //Used to maintain scroll position in case view gets destroyed e.g, cases of back navigation
-    contextProvider: PropTypes.instanceOf(ContextProvider),
+    contextProvider: PropTypes.instanceOf(ContextProvider as any),
 
     //Methods which returns react component to be rendered. You get type of view and data in the callback.
     rowRenderer: PropTypes.func.isRequired,
